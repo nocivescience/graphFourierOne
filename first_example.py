@@ -36,10 +36,11 @@ class ThridIntent(Scene):
                     my_freq*alpha.get_value()*TAU,about_point=mother_circle.get_center()
                 )
         my_circles.add_updater(get_my_update)
-        path=self.get_path(my_circles[0],my_circles[-1]).add_updater(
-            lambda path:path.become(self.get_path(my_circles[0],my_circles[-1]))
-        )
-        self.play(Create(my_circles), Create(path))
+        path=self.get_path(my_circles[0],my_circles[-1])#.add_updater(
+        #    lambda path:path.become(self.get_path(my_circles[0],my_circles[-1]))
+        #)
+        numero=self.get_distance(my_circles[0],my_circles[-1])
+        self.play(Create(my_circles), Create(path),run_time=1)
         self.play(alpha.animate.set_value(1),rate_func=smooth,run_time=30)
         self.wait()
     def get_circle(self,radio):
@@ -53,5 +54,12 @@ class ThridIntent(Scene):
             circles[i+1].move_to(circles[i].points[0])
     def get_path(self, mob, dot):
         path = VMobject(stroke_width=1, color=RED)
-        path.set_points_as_corners([dot.get_center(), mob.get_center()])
+        path.add_updater(lambda t: t.set_points_as_corners([dot.get_center(), mob.get_center()]))
         return path
+    def get_distance(self, mob, dot):
+        valor= np.linalg.norm(mob.get_center()-dot.get_center())
+        valor_tracker=ValueTracker(valor)
+        numero=DecimalNumber(valor_tracker.get_value(),num_decimal_places=2)
+        numero.add_updater(lambda t: t.set_value(np.linalg.norm(mob.get_center()-dot.get_center()))) #hay que repetir el concepto nuevamente
+        numero.move_to(3*UP+3*RIGHT)
+        self.add(numero)
